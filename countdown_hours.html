@@ -6,7 +6,172 @@
         .timer-container {
             text-align: center;<!DOCTYPE html>
 <html>
+<head><!DOCTYPE html>
+<html>
 <head>
+    <title>Countdown Timer</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            width: 300px;
+        }
+        .timer-container {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .display {
+            font-size: 48px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        button {
+            font-size: 18px;
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background-color: #333;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        input[type="number"] {
+            background-color: #333;
+            color: white;
+            font-size: 18px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #666;
+        }
+        /* Remove spinner arrows from number input */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="timer-container">
+            <input type="number" id="hours" placeholder="Enter hours" min="0">
+            <div class="display" id="timer">00:00:00</div>
+            <button onclick="startTimer()">Start</button>
+            <button onclick="stopTimer()">Stop</button>
+            <button onclick="resetTimer()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let timeInSeconds;
+        let countdown;
+
+        // Load saved time when page loads
+        window.onload = function() {
+            const savedTime = localStorage.getItem('countdownTime');
+            const savedEndTime = localStorage.getItem('countdownEndTime');
+            
+            if (savedTime && savedEndTime) {
+                const now = new Date().getTime();
+                const timeLeft = Math.floor((savedEndTime - now) / 1000);
+                
+                if (timeLeft > 0) {
+                    timeInSeconds = timeLeft;
+                    // Update the input field with saved hours
+                    document.getElementById('hours').value = Math.ceil(timeLeft / 3600);
+                    updateDisplay();
+                } else {
+                    localStorage.removeItem('countdownTime');
+                    localStorage.removeItem('countdownEndTime');
+                }
+            }
+        };
+
+        function startTimer() {
+            stopTimer();
+            
+            // Use existing timeInSeconds if available, otherwise calculate from input
+            if (!timeInSeconds) {
+                const hours = document.getElementById('hours').value;
+                timeInSeconds = hours * 3600;
+            }
+            
+            if (timeInSeconds > 0) {
+                const now = new Date().getTime();
+                const endTime = now + (timeInSeconds * 1000);
+                localStorage.setItem('countdownTime', timeInSeconds);
+                localStorage.setItem('countdownEndTime', endTime);
+                
+                updateDisplay();
+                countdown = setInterval(updateTimer, 1000);
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(countdown);
+            // Save the remaining time when stopping
+            localStorage.setItem('countdownTime', timeInSeconds);
+            localStorage.setItem('countdownEndTime', new Date().getTime() + (timeInSeconds * 1000));
+        }
+
+        function updateTimer() {
+            timeInSeconds--;
+            if (timeInSeconds <= 0) {
+                stopTimer();
+                alert('Timer finished!');
+                timeInSeconds = 0;
+                // Only clear localStorage when timer reaches zero
+                localStorage.removeItem('countdownTime');
+                localStorage.removeItem('countdownEndTime');
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const hours = Math.floor(timeInSeconds / 3600);
+            const minutes = Math.floor((timeInSeconds % 3600) / 60);
+            const seconds = timeInSeconds % 60;
+
+            const display = document.getElementById('timer');
+            display.textContent = `${padNumber(hours)}:${padNumber(minutes)}:${padNumber(seconds)}`;
+        }
+
+        function padNumber(number) {
+            return number.toString().padStart(2, '0');
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timeInSeconds = 0;
+            document.getElementById('hours').value = '';
+            localStorage.removeItem('countdownTime');
+            localStorage.removeItem('countdownEndTime');
+            updateDisplay();
+        }
+    </script>
+</body>
+</html>
+
     <title>Countdown Timer</title>
     <style>
         body {
