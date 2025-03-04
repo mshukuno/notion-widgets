@@ -7,6 +7,7 @@
             text-align: center;
             margin-top: 50px;
             font-family: Arial, sans-serif;
+            color: white;
         }
         .display {
             font-size: 48px;
@@ -32,15 +33,42 @@
         let timeInSeconds;
         let countdown;
 
+        // Load saved time when page loads
+        window.onload = function() {
+            const savedTime = localStorage.getItem('countdownTime');
+            const savedEndTime = localStorage.getItem('countdownEndTime');
+            
+            if (savedTime && savedEndTime) {
+                const now = new Date().getTime();
+                const timeLeft = Math.floor((savedEndTime - now) / 1000);
+                
+                if (timeLeft > 0) {
+                    timeInSeconds = timeLeft;
+                    // Update the input field with saved hours
+                    document.getElementById('hours').value = Math.ceil(timeLeft / 3600);
+                    updateDisplay();
+                } else {
+                    localStorage.removeItem('countdownTime');
+                    localStorage.removeItem('countdownEndTime');
+                }
+            }
+        };
+
         function startTimer() {
-            // Clear any existing timer
             stopTimer();
             
-            // Get hours from input and convert to seconds
-            const hours = document.getElementById('hours').value;
-            timeInSeconds = hours * 3600;
+            // Use existing timeInSeconds if available, otherwise calculate from input
+            if (!timeInSeconds) {
+                const hours = document.getElementById('hours').value;
+                timeInSeconds = hours * 3600;
+            }
             
             if (timeInSeconds > 0) {
+                const now = new Date().getTime();
+                const endTime = now + (timeInSeconds * 1000);
+                localStorage.setItem('countdownTime', timeInSeconds);
+                localStorage.setItem('countdownEndTime', endTime);
+                
                 updateDisplay();
                 countdown = setInterval(updateTimer, 1000);
             }
@@ -48,6 +76,9 @@
 
         function stopTimer() {
             clearInterval(countdown);
+            // Save the remaining time when stopping
+            localStorage.setItem('countdownTime', timeInSeconds);
+            localStorage.setItem('countdownEndTime', new Date().getTime() + (timeInSeconds * 1000));
         }
 
         function updateTimer() {
@@ -56,6 +87,9 @@
                 stopTimer();
                 alert('Timer finished!');
                 timeInSeconds = 0;
+                // Only clear localStorage when timer reaches zero
+                localStorage.removeItem('countdownTime');
+                localStorage.removeItem('countdownEndTime');
             }
             updateDisplay();
         }
